@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Эмулятор процессора</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header>
+    <div><h1>Эмулятор процессора</h1><p>Вариант 10 · Архитектура фон Неймана</p></div>
+    <button id="theme" type="button" aria-pressed="false">Тёмная тема</button>
+  </header>
+  <main>
+    <section class="editor">
+      <h2><label for="source">Ассемблер</label></h2>
+      <div class="toolbar">
+        <button id="choose">Выбрать файл</button>
+        <input id="file" type="file" accept=".asm,.txt" hidden>
+        <select id="example" aria-label="Примеры программ">
+          <option value="">Примеры</option>
+          <option value="/maximum.asm">Поиск максимума</option>
+          <option value="/convolution.asm">Свёртка массивов</option>
+        </select>
+      </div>
+      <textarea id="source" spellcheck="false" placeholder="Введите код или перетащите сюда файл .asm"></textarea>
+      <div class="toolbar">
+        <button id="load">Загрузить в ОЗУ</button>
+        <button id="step" disabled>Шаг</button>
+        <button id="run" disabled>До HALT</button>
+        <button id="stop" hidden>Пауза</button>
+      </div>
+      <p id="status" role="status">Загрузите программу для выполнения.</p>
+      <p id="error" role="alert" hidden></p>
+    </section>
+    <section>
+      <h2>Процессор</h2>
+      <dl id="control" class="values"></dl>
+      <p id="command" class="mono"></p>
+      <dl id="fields" class="values"></dl>
+      <h3>Регистры <small>HEX</small></h3>
+      <dl id="registers" class="values"></dl>
+      <h3>Флаги</h3>
+      <dl id="flags" class="values"></dl>
+      <p id="write" class="mono"></p>
+    </section>
+    <section>
+      <h2>ОЗУ <small>64 КиБ</small></h2>
+      <form id="memory-form" class="toolbar">
+        <label for="address">Адрес (HEX)</label>
+        <input id="address" value="0000" size="6" maxlength="6" required>
+        <button>Перейти</button>
+        <button id="prev" type="button" aria-label="Предыдущая страница памяти">←</button>
+        <button id="next" type="button" aria-label="Следующая страница памяти">→</button>
+        <select id="symbols" aria-label="Метки программы"><option>Метки</option></select>
+      </form>
+      <p id="range"></p>
+      <pre id="memory" aria-label="Байты памяти"></pre>
+    </section>
+    <section>
+      <h2>Трасса выполнения</h2>
+      <p>Выберите шаг, чтобы посмотреть состояние процессора.</p>
+      <button id="latest" disabled>Текущий шаг</button>
+      <div class="trace">
+        <table>
+          <thead><tr><th>Шаг</th><th>Адрес</th><th>Команда</th><th>Следующий PC</th></tr></thead>
+          <tbody id="trace"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
