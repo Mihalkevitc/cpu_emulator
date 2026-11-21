@@ -25,9 +25,11 @@ class CPU:
         self.zf = self.cf = self.sf = self.halted = False
 
     def _address(self, mode, value):
+        """Возвращает байтовый адрес прямого или косвенного операнда."""
         return value if mode == D else self.registers[value]
 
     def _read(self, operand):
+        """Читает значение из инструкции, регистра или ОЗУ."""
         mode, value = operand
         if mode == I:
             return value
@@ -36,6 +38,7 @@ class CPU:
         return self.memory.read(self._address(mode, value))
 
     def _write(self, operand, value):
+        """Записывает слово и возвращает сведения о записи в ОЗУ."""
         mode, index = operand
         if mode == R:
             self.registers[index] = value
@@ -46,11 +49,13 @@ class CPU:
         return address, before, value
 
     def step(self):
+        """Выполняет одну инструкцию и возвращает снимок состояния."""
         if self.halted:
             raise ValueError('Процессор остановлен')
         address = self.pc
         raw = self.memory.read(address, 4)
         instruction = Instruction.decode(raw)
+        # Команда занимает четыре байта. Выполненный переход заменит этот адрес.
         next_pc = (address + 4) & MASK
         op, args = instruction.op, instruction.operands
         write = None
@@ -74,6 +79,7 @@ class CPU:
             self._write(args[second], values[second])
         elif op == Op.MUL:
             product = self.registers[0] * self._read(args[0])
+            # Делим 32-битное произведение между AX и DX.
             self.registers[0] = product & MASK
             self.registers[3] = product >> 16
             self.cf = bool(self.registers[3])
@@ -86,6 +92,7 @@ class CPU:
                 total = left - right
             else:
                 total = left + right + (self.cf if op == Op.ADC else 0)
+            # Сохраняем младшее слово, перенос или заём определяем по полной сумме.
             result = total & MASK
             self.cf = not 0 <= total <= MASK
             self.zf = result == 0
@@ -98,6 +105,7 @@ class CPU:
                     self.zf, self.cf, self.sf, write)
 
     def run(self, limit=10_000):
+        """Выдаёт снимки до HALT и прерывает выполнение при исчерпании лимита."""
         for _ in range(limit):
             if self.halted:
                 break

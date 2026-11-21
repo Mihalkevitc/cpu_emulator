@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from architecture import D, I, R, X, RAM_SIZE, REGISTERS, Instruction, Op
 
+# После перевода строки в верхний регистр метка начинается с буквы или подчёркивания.
 LABEL = re.compile(r'[A-Z_][A-Z_0-9]*')
 
 
@@ -14,6 +15,7 @@ class Program:
 
 
 def number(token, symbols):
+    """Разрешает число, имя метки или адрес метки со смещением."""
     token = token.strip()
     match = re.fullmatch(r'([A-Z_][A-Z_0-9]*)(?:\s*([+-])\s*(0X[0-9A-F]+|[0-9]+))?', token)
     if match:
@@ -25,16 +27,18 @@ def number(token, symbols):
 
 
 def operand(token, symbols):
+    """Определяет режим адресации по скобкам и имени регистра."""
     token = token.strip()
-    indirect = token.startswith('[') and token.endswith(']')
-    if indirect:
+    in_memory = token.startswith('[') and token.endswith(']')
+    if in_memory:
         token = token[1:-1].strip()
     if token in REGISTERS:
-        return (X if indirect else R), REGISTERS.index(token)
-    return (D if indirect else I), number(token, symbols)
+        return (X if in_memory else R), REGISTERS.index(token)
+    return (D if in_memory else I), number(token, symbols)
 
 
 def assemble(source):
+    """Собирает образ ОЗУ, таблицу меток и машинный листинг."""
     symbols, lines = {}, []
     address = 0
     # Первый проход определяет адреса, в том числе для ссылок вперёд.
@@ -51,10 +55,12 @@ def assemble(source):
         name = fields[0]
         args = fields[1].split(',') if len(fields) == 2 else []
         lines.append((line_no, address, name, args, original.strip()))
+        # DW размещает двухбайтовые слова, инструкция занимает четыре байта.
         address += 2 * len(args) if name == 'DW' else 4
         if address > RAM_SIZE:
             raise ValueError(f'Строка {line_no}: программа не помещается в ОЗУ')
 
+    # Второй проход кодирует строки, когда известны адреса всех меток.
     image, listing = bytearray(), []
     for line_no, address, name, args, original in lines:
         try:

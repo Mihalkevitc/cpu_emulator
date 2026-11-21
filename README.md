@@ -9,14 +9,13 @@ python main.py programs/find_max.asm --result MAX_RESULT
 # Свёртка, 3 слова результата
 python main.py programs/convolution.asm --result RESULT --words 3
 
-# Пошаговый режим (Enter — команда, q — выход)
+# Пошаговый режим (Enter - команда, q - выход)
 python main.py programs/find_max.asm --step
 
 # Только листинг машинного кода
 python main.py programs/convolution.asm --listing
 
 # Автотесты
-
 python -m unittest discover -s tests -v
 ```
 
